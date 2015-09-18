@@ -974,6 +974,25 @@ grunt.initConfig({
     }
   }
 })
+
+
+## The "gitsubmoduleupdate" task
+
+Updates submodules in the repository (via git submodule update).
+
+### Overview
+In your project's Gruntfile, add a section named `gitsubmoduleupdate` to the data object passed into `grunt.initConfig()`.
+
+```js
+grunt.initConfig({
+  gitsubmoduleupdate: {
+    your_target: {
+      options: {
+        // Target-specific options go here.
+      }
+    }
+  }
+})
 ```
 
 ### Options
