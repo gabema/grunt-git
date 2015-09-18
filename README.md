@@ -13,11 +13,14 @@ If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out th
 npm install grunt-git --save-dev
 ```
 
-One the plugin has been installed, it may be enabled inside your Gruntfile with this line of JavaScript:
+Once the plugin has been installed, it may be enabled inside your Gruntfile with this line of JavaScript:
 
 ```js
 grunt.loadNpmTasks('grunt-git');
 ```
+
+### Upgrading from v0.2.x
+The `gitcommit` command used to call `git add` for you. This is no longer the case. Be sure to add a `gitadd` task whenever there might be new files to commit. The `ignoreEmpty` option is no longer supported.
 
 ## Universal options
 The following options may be applied to any task
@@ -33,6 +36,63 @@ Type: `string`
 Default value: `none`
 
 Change the current working directory before executing the git call. Useful for performing operations on repositories that are located in subdirectories.
+**Note:** When performing commands that provide files (e.g. gitcommit), it is also necessary to specify the ``cwd`` for the files explicitly.
+
+#### Example:
+```js
+grunt.initConfig({
+  gitcommit: {
+    your_target: {
+      options: {
+        cwd: "/path/to/repo"
+      },
+      files: [
+        {
+          src: ["fileone.txt", "filetwo.js"],
+          expand: true,
+          cwd: "/path/to/repo"
+        }
+      ]
+    }
+  },
+})
+```
+
+## The "gitadd" task
+
+Add file contents to the index
+
+### Options
+
+#### options.all
+Type: `Boolean`
+Default value: `false`
+
+Update the index not only where the working tree has a file matching <pathspec> but also where the
+index already has an entry. This adds, modifies, and removes index entries to match the working tree.
+
+#### options.force
+Type: `Boolean`
+Default value: `false`
+
+Allow adding otherwise ignored files.
+
+### Usage Examples
+
+```js
+grunt.initConfig({
+  gitadd: {
+    task: {
+      options: {
+        force: true
+      },
+      files: {
+        src: ['test.txt']
+      }
+    }
+  },
+});
+```
 
 ## The "gitcommit" task
 
@@ -66,7 +126,7 @@ Default value: `'Commit'`
 
 The commit message.
 
-#### options.ignoreEmpty
+#### options.allowEmpty
 Type: `Boolean`
 Default value: `false`
 
@@ -143,7 +203,7 @@ grunt.initConfig({
 
 ## The "gittag" task
 
-Creates a git tag.
+Creates (or deletes) a git tag.
 
 ### Overview
 In your project's Gruntfile, add a section named `gittag` to the data object passed into `grunt.initConfig()`.
@@ -176,15 +236,39 @@ Default value: `''`
 
 The tag message (optional).
 
+#### options.remove
+Type: `Boolean`
+Default value: `false`
+
+Whether to delete the tag (optional).
+
+#### options.annotated
+Type: `Boolean`
+Default value: `false`
+
+Whether to create an annotated tag (optional).
+
+#### options.force
+Type: `Boolean`
+Default value: `false`
+
+Whether to force to create or update the tag (optional).
+
 ### Usage Examples
 
 ```js
 grunt.initConfig({
     gittag: {
-        task: {
+        addtag: {
             options: {
                 tag: '0.0.1',
                 message: 'Testing'
+            }
+        },
+        deletetag: {
+            options: {
+                tag: '0.0.1',
+                remove: true
             }
         }
     },
@@ -225,6 +309,12 @@ Type: `Boolean`
 Default value: `false`
 
 Whether the branch should be created (optional).
+
+#### options.create
+Type: `Boolean`
+Default value: `false`
+
+Whether the checkout should be forced in the case of git errors (optional)
 
 #### options.overwrite
 Type: `Boolean`
@@ -438,6 +528,60 @@ grunt.initConfig({
     },
 });
 ```
+## The "gitrm" task
+
+Removes files from git's working tree and index.
+
+### Overview
+In your project's Gruntfile, add a section named `gitrm` to the data object passed into `grunt.initConfig()`.
+
+```js
+grunt.initConfig({
+  gitrm: {
+    your_target: {
+      options: {
+        // Target-specific options go here.
+      },
+      files: {
+        src: // Target-specific files go here.
+      }
+    }
+  },
+})
+```
+
+Each target defines a specific git task that can be run. The different available tasks are listed below.
+
+### Options
+
+#### options.force
+Type: `boolean`
+Default value: `false`
+
+Will force a removal of the files listed in the configuration.
+
+#### options.recurse
+Type: `boolean`
+Default value: `false`
+
+Will recurse into subdirectories if specified in the configuration.
+
+### Usage Examples
+
+```js
+grunt.initConfig({
+    gitrm: {
+        task: {
+            options: {
+                force: 'true'
+            },
+            files: {
+                src: ['dist/test.min.js']
+            }
+        }
+    },
+});
+```
 
 ## The "gitclean" task
 
@@ -510,7 +654,7 @@ Remove untracked directories in addition to untracked files. If an untracked dir
 Pushes to a remote.
 
 ### Overview
-In your project's Gruntfile, add a section named `gitcommit` to the data object passed into `grunt.initConfig()`.
+In your project's Gruntfile, add a section named `gitpush` to the data object passed into `grunt.initConfig()`.
 
 ```js
 grunt.initConfig({
@@ -596,6 +740,63 @@ Default value: `master`
 
 The branch to pull from. E.g.: `master`, `develop` (optional).
 
+## The "gitfetch" task
+
+Download objects and refs from a repo.
+
+### Overview
+
+In your project's Gruntfile, add a section named `gitfetch` to the data object passed into `grunt.initConfig()`.
+
+```js
+grunt.initConfig({
+  gitfetch: {
+    your_target: {
+      options: {
+        all: true
+      }
+    }
+  }
+})
+```
+
+### Options
+
+#### options.repository
+Type: `String`
+Default value: `null`
+
+The repository you want to fetch from. When no remote is specified, by default the origin remote will be used.
+
+#### options.all
+Type: `Boolean`
+Default value: `false`
+
+Adds the `--all` flag. Fetch all remotes.
+
+#### options.append
+Type: `Boolean`
+Default value: `false`
+
+Adds the `--append` flag. Append ref names and object names of fetched refs.
+
+#### options.prune
+Type: `Boolean`
+Default value: `false`
+
+Adds the `--prune` flag. After fetching, remove any remote-tracking references that no longer exist on the remote.
+
+#### options.notags
+Type: `Boolean`
+Default value: `false`
+
+Adds the `--no-tags` flag. Disables automatic tag following.
+
+#### options.tags
+Type: `Boolean`
+Default value: `false`
+
+Adds the `--tags` flag. Fetch all tags from the remote into local.
 
 ## The "gitmerge" task
 
@@ -641,6 +842,48 @@ Type: `Boolean`
 Default value: `false`
 
 Will add the `--squash` flag to the merge.
+
+#### options.edit
+Type: `Boolean`
+Default value: `false`
+
+Will add the `--edit` flag to the merge: this forces an editor to appear before committing the successful merge.
+
+#### options.noEdit
+Type: `Boolean`
+Default value: `false`
+
+Will add the `--no-edit` flag to the merge: this bypasses the editor from appearing before committing a successful merge.
+
+#### options.message
+Type: `String`
+Default value: `null`
+
+Will add the `-m` flag followed by the value of this option to the merge: this string will be used as the commit message for the merge.
+
+#### options.commit
+Type: `Boolean`
+Default value: `false`
+
+Will add the `--commit` flag to the merge: this option can be used to override ``-no-commit`` in the git config.
+
+#### options.noCommit
+Type: `Boolean`
+Default value: `false`
+
+Will add the `--no-commit` flag to the merge: do not commit the merge.
+
+#### options.strategy
+Type: `String`
+Default value: `null`
+
+Will add the `-s` flag followed by the value of this option to the merge: this string will be used to specify the strategy for the merge.
+
+#### options.strategyOption
+Type: `String`
+Default value: `null`
+
+Will add the `-X` flag followed by the value of this option to the merge: this string will be used to specify a strategy-specific option for the merge.
 
 ## The "gitarchive" task
 
@@ -705,6 +948,33 @@ Default value: none.
 Without an optional `path` parameter, all files and subdirectories of the current working directory are included in the archive. If one or more paths are specified, only these are included.
 
 
+## The "gitlog" task
+
+Logs commit history and stores the result in a grunt property or calls a callback function with the result. The result is an array of objects with the following properties:
+
+* `hash` - the commit hash
+* `author` - an object with `name` and `email` properties
+* `date` - the date of the commit
+* `subject` - the subject string of the commit
+* `body` - the body string of the commit
+
+### Overview
+
+In your project's Gruntfile, add a section named `gitlog` to the data object passed into `grunt.initConfig()`.
+
+```js
+grunt.initConfig({
+  gitlog: {
+    mytarget: {
+      options: {
+        prop: 'gitlog.mytarget.result',
+        from: 'v0.2.0',
+        to: 'v0.2.2'
+      }
+    }
+  }
+})
+
 
 ## The "gitsubmoduleupdate" task
 
@@ -727,83 +997,79 @@ grunt.initConfig({
 
 ### Options
 
-More detailed descriptions of these options are available at http://git-scm.com/docs/git-submodule.
-
-#### options.init
-Type: `boolean`
-Default value: `false`
-
-Initialize all submodules for which "git submodule init" has not been called so far before updating.
-
-#### options.remote
-Type: `Boolean`
-Default value: `false`
-
-Instead of using the superproject's recorded SHA-1 to update the submodule, use the status of the submodule's remote-tracking branch.
-
-#### options.force
-Type: `Boolean`
-Default value: `false`
-
-Throw away local changes in submodules when switching to a different commit.
-
-#### options.rebase
-Type: `Boolean`
-Default value: `false`
-
-Rebase the current branch onto the commit recorded in the superproject.
-
-#### options.merge
-Type: `Boolean`
-Default value: `false`
-
-Merge the commit recorded in the superproject into the current branch of the submodule.
-
-#### options.reference
+#### options.prop
 Type: `String`
-Default value: `null`
+Default value: `'gitlog.<target name>.result'`.
 
-This option will be passed to the ``git-clone()`` command used during an *update --init*
+The grunt property in which to store the results.
 
-#### options.recursive
-Type: `Boolean`
-Default value: `false`
+#### options.callback
+Type: `Function`
+Default value: none.
 
-Traverse submodules recursively.
+A callback function to call with the log results.
 
-#### options.depth
-Type: `Integer`
-Default value: `null`
-
-Create a 'shallow' clone with a history truncated to the specified number of revisions.
-
-#### options.path
+#### options.pretty
 Type: `String`
-Default value: `null`
-
-path to the submodule to be updated. All submodules will be updated if path is not specified.
-
-#### options.noFetch
-Type: `Boolean`
-Default value: `false`
-
-Don't fetch new objects from the remote site.
-
-### Usage Examples
-
-```js
-grunt.initConfig({
-    gitsubmoduleupdate: {
-        task: {
-            options: {
-                init: true,
-                recursive: true
-            }
-        }
-    }
-});
+Default value: 
+```
+    'format:' + 
+    '{%n' +
+    '  "hash": "%H",%n' + // commit hash
+    '  "author": {%n' +
+    '    "name": "%an",%n' + // author
+    '    "email": "%ae"%n' + // email
+    '  },%n' +
+    '  "date": "%aD",%n' + // date
+    '  "subject": "%s",%n' + // subject
+    '  "body": "%b"%n' + // body
+    '}%n' +
+    '--grunt-gitlog-separator--' // separator
 ```
 
+The format for the log output
+
+#### options.number
+Type: `Int`
+Default value: none.
+
+The number of logs entries to export
+
+#### options.from
+Type: `String`
+Default value: none.
+
+A commit hash, tag, etc to start from.
+
+#### options.to
+Type: `String`
+Default value: none.
+
+A commit hash, tag, etc to end at. Defaults to `'HEAD'` if `from` is specified.
+
+#### options.dateOrder
+Type: `Boolean`
+Default value: none.
+
+Whether to order by date. Defaults to true when `options.after` or `options.before` are specified.
+
+#### options.after
+Type: `Date`
+Default value: none.
+
+A date to start from. Causes `options.dateOrder` to be true
+
+#### options.before
+Type: `Date`
+Default value: none.
+
+A date to stop at. Causes `options.dateOrder` to be true
+
+#### options.noMerges
+Type: `boolean`
+Default value: true.
+
+Whether or not to include merges in the logs.
 
 ## Contributing
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).

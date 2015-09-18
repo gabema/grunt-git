@@ -46,4 +46,82 @@ describe('merge', function () {
             .expect(['merge', 'origin/master', '--squash'])
             .run(done);
     });
+
+    it('should accept --edit option', function (done) {
+        var options = {
+            branch: 'origin/master',
+            edit: true
+        };
+
+        new Test(command, options)
+            .expect(['merge', 'origin/master', '--edit'])
+            .run(done);
+    });
+
+    it('should accept --no-edit option', function (done) {
+        var options = {
+            branch: 'origin/master',
+            noEdit: true
+        };
+
+        new Test(command, options)
+            .expect(['merge', 'origin/master', '--no-edit'])
+            .run(done);
+    });
+
+    it('should accept --message option', function (done) {
+        var options = {
+            branch: 'origin/master',
+            message: 'test message'
+        };
+
+        new Test(command, options)
+            .expect(['merge', 'origin/master', '-m', 'test message'])
+            .run(done);
+    });
+
+    it('should accept --commit option', function (done) {
+        var options = {
+            branch: 'origin/master',
+            commit: true
+        };
+
+        new Test(command, options)
+            .expect(['merge', 'origin/master', '--commit'])
+            .run(done);
+    });
+
+    it('should accept --no-commit option', function (done) {
+        var options = {
+            branch: 'origin/master',
+            noCommit: true
+        };
+
+        new Test(command, options)
+            .expect(['merge', 'origin/master', '--no-commit'])
+            .run(done);
+    });
+
+    it('should accept --s option', function (done) {
+        var options = {
+            branch: 'origin/master',
+            strategy: 'subtree'
+        };
+
+        new Test(command, options)
+            .expect(['merge', 'origin/master', '-s', 'subtree'])
+            .run(done);
+    });
+
+    it('should accept --X option', function (done) {
+        var options = {
+            branch: 'origin/master',
+            strategyOption: 'subtree=path/to/file'
+        };
+
+        new Test(command, options)
+            .expect(['merge', 'origin/master', '-Xsubtree=path/to/file'])
+            .run(done);
+    });
+
 });
